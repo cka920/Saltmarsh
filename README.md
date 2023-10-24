@@ -1,2 +1,2 @@
 # Saltmarsh
-## Description of the project
+## On the three dimensional soil properties and (environmental) patterns for plant roots in Mediterranean coastal salt marsh
