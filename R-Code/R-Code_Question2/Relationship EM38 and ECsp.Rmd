@@ -1,0 +1,328 @@
+---
+title: "Relationship EM38 and ECsp"
+author: "Ewen LE SEYEC; Cléo SALVIA; Lucie LAVERGNE; Charlotte KAISER"
+date: "2023-12-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(dplyr)
+library(MASS)
+library(tidyverse)
+```
+
+
+## EM38 (0-35) and ECsp (0-40)
+```{r, echo=TRUE,eval=TRUE}
+# Charger les données depuis le fichier Excel
+chemin_fichier_excel <- "C:/Users/33652/Documents/supAgro/COURS 2A/Stat/Relation_EM38_conductivity.xlsx"
+donnees <- read_excel(chemin_fichier_excel)
+
+# Tracer le graphique à dispersion avec les axes inversés
+options(repr.plot.width = 8, repr.plot.height = 8)  # Ajuster la taille du graphique
+plot(
+  x = donnees$`EM38_35`,  # Inverser les données entre les axes x et y
+  y = donnees$`ECsp40`,  # Inverser les données entre les axes x et y
+  main = "Scatter chart",
+  xlab = "EM38 (0-35) in mS/cm",  # Changer le label de l'axe x
+  ylab = "ECsp (0-40) in mS/cm",  # Changer le label de l'axe y
+  pch = 16,
+  col = "blue",
+  xlim = c(0, max(donnees$`EM38_35`)),  # Définir la limite inférieure à 0 pour l'axe x
+  ylim = c(0, max(donnees$`ECsp40`))  # Définir la limite inférieure à 0 pour l'axe y
+)
+
+# Ajouter une ligne de régression linéaire
+regression <- lm(`ECsp40` ~ `EM38_35`, data = donnees)  # Inverser les variables dans la formule
+abline(regression, col = "red", lwd = 2)
+
+# Légende pour la ligne de régression
+legend("topleft", legend = "Linear regression", col = "red", lwd = 2, bty = "n")
+
+# Calculer et afficher le coefficient de corrélation
+correlation <- cor(donnees$`EM38_35`, donnees$`ECsp40`)  # Inverser les données dans la fonction cor
+cat("Coefficient de corrélation : ", correlation, "\n")
+
+# Calculer et afficher le coefficient de détermination (R²)
+rsquared <- summary(regression)$r.squared
+cat("Coefficient de détermination (R²) : ", rsquared, "\n")
+
+# Obtenir les coefficients de la régression
+coefficients <- coef(regression)
+
+# Afficher l'équation de régression sur le graphique
+eq <- as.character(round(coefficients[2], 4)) %>%
+  paste("* x + ", round(coefficients[1], 4))
+
+# Ajouter le coefficient de corrélation et R² au graphique (au milieu)
+text(
+  x = 500,  # Changer la position du texte sur l'axe x
+  y = 0.45 * max(donnees$`ECsp40`),  # Ajuster la position du texte
+  labels = paste("Correlation =", round(correlation, 2), "\nR² =", round(rsquared, 2)),
+  pos = 4,
+  col = "red"
+)
+
+# Ajouter l'équation de régression sous le coefficient de détermination
+text(
+  x = 553,  # Changer la position du texte sur l'axe x
+  y = 0.35 * max(donnees$`ECsp40`),  # Ajuster la position de l'équation
+  labels = bquote(italic(y) == .(eq)),
+  col = "red"
+)
+```
+
+## EM38 (0-75) horizontal position and ECsp (0-80)
+```{r, echo=TRUE,eval=TRUE}
+# Installer le package readxl si ce n'est pas déjà fait
+# install.packages("readxl")
+
+# Charger les bibliothèques nécessaires
+library(readxl)
+library(dplyr)  # Ajout de la bibliothèque dplyr
+
+# Charger les données depuis le fichier Excel
+chemin_fichier_excel <- "C:/Users/33652/Documents/supAgro/COURS 2A/Stat/Relation_EM38_conductivity.xlsx"
+
+# Ouvrir une nouvelle fenêtre graphique
+options(repr.plot.width = 8, repr.plot.height = 8)  # Ajuster la taille du graphique
+donnees <- read_excel(chemin_fichier_excel)
+
+# Tracer le graphique à dispersion avec les axes inversés
+par(mfrow = c(1, 1))  # Une seule fenêtre graphique
+plot(
+  x = donnees$`EM38_75`,  # Inverser les données entre les axes x et y
+  y = donnees$`ECsp80`,  # Inverser les données entre les axes x et y
+  main = "Scatter chart",
+  xlab = "EM38 (0-75) with horizontal position in mS/cm ",  # Changer le label de l'axe x
+  ylab = "ECsp (0-80) in mS/cm",  # Changer le label de l'axe y
+  pch = 16,
+  col = "blue",
+  xlim = c(0, max(donnees$`EM38_75`)),  # Définir la limite inférieure à 0 pour l'axe x
+  ylim = c(0, max(donnees$`ECsp80`))  # Définir la limite inférieure à 0 pour l'axe y
+)
+
+# Ajouter une ligne de régression linéaire
+regression <- lm(`ECsp80` ~ `EM38_75`, data = donnees)  # Inverser les variables dans la formule
+abline(regression, col = "red", lwd = 2)
+
+# Légende pour la ligne de régression
+legend("topleft", legend = "Linear regression", col = "red", lwd = 2, bty = "n")
+
+# Calculer et afficher le coefficient de corrélation
+correlation <- cor(donnees$`EM38_75`, donnees$`ECsp80`)  # Inverser les données dans la fonction cor
+cat("Coefficient de corrélation : ", correlation, "\n")
+
+# Calculer et afficher le coefficient de détermination (R²)
+rsquared <- summary(regression)$r.squared
+cat("Coefficient de détermination (R²) : ", rsquared, "\n")
+
+# Obtenir les coefficients de la régression
+coefficients <- coef(regression)
+
+# Afficher l'équation de régression sur le graphique
+eq <- as.character(round(coefficients[2], 4)) %>%
+  paste("* x + ", round(coefficients[1], 4))
+
+# Ajouter le coefficient de corrélation et R² au graphique (au milieu)
+text(
+  x = 600,  # Changer la position du texte sur l'axe x
+  y = 0.45 * max(donnees$`ECsp80`),  # Ajuster la position du texte
+  labels = paste("Correlation =", round(correlation, 2), "\nR² =", round(rsquared, 2)),
+  pos = 4,
+  col = "red"
+)
+
+# Ajouter l'équation de régression sous le coefficient de détermination
+text(
+  x = 667,  # Changer la position du texte sur l'axe x
+  y = 0.35 * max(donnees$`ECsp80`),  # Ajuster la position de l'équation
+  labels = bquote(italic(y) == .(eq)),
+  col = "red"
+)
+```
+
+## EM38 (0-35) vertical position and ECsp (0-80)
+```{r, echo=TRUE,eval=TRUE}
+# Installer le package readxl si ce n'est pas déjà fait
+# install.packages("readxl")
+
+# Charger la bibliothèque readxl
+library(readxl)
+
+# Charger les données depuis le fichier Excel
+chemin_fichier_excel <- "C:/Users/33652/Documents/supAgro/COURS 2A/Stat/Relation_EM38_conductivity.xlsx"
+donnees <- read_excel(chemin_fichier_excel)
+
+# Ouvrir une nouvelle fenêtre graphique
+options(repr.plot.width = 8, repr.plot.height = 8)  # Ajuster la taille du graphique
+par(mfrow = c(1, 1))  # Une seule fenêtre graphique
+
+# Tracer le graphique à dispersion avec les axes inversés
+plot(
+  x = donnees$`EM38_75bis`,  # Inverser les données entre les axes x et y
+  y = donnees$`ECsp80`,  # Inverser les données entre les axes x et y
+  main = "Scatter chart",
+  xlab = "EM38 (0-75) with vertical position in mS/cm ",  # Changer le label de l'axe x
+  ylab = "ECsp (0-80) in mS/cm",  # Changer le label de l'axe y
+  pch = 16,
+  col = "blue",
+  xlim = c(0, max(donnees$`EM38_75bis`)),  # Définir la limite inférieure à 0 pour l'axe x
+  ylim = c(0, max(donnees$`ECsp80`))  # Définir la limite inférieure à 0 pour l'axe y
+)
+
+# Ajouter une ligne de régression linéaire
+regression <- lm(`ECsp80` ~ `EM38_75bis`, data = donnees)  # Inverser les variables dans la formule
+abline(regression, col = "red", lwd = 2)
+
+# Légende pour la ligne de régression
+legend("topleft", legend = "Linear regression", col = "red", lwd = 2, bty = "n")
+
+# Calculer et afficher le coefficient de corrélation
+correlation <- cor(donnees$`EM38_75bis`, donnees$`ECsp80`)  # Inverser les données dans la fonction cor
+cat("Coefficient de corrélation : ", correlation, "\n")
+
+# Calculer et afficher le coefficient de détermination (R²)
+rsquared <- summary(regression)$r.squared
+cat("Coefficient de détermination (R²) : ", rsquared, "\n")
+
+# Obtenir les coefficients de la régression
+coefficients <- coef(regression)
+
+# Afficher l'équation de régression sur le graphique
+eq <- as.character(round(coefficients[2], 4)) %>%
+  paste("* x + ", round(coefficients[1], 4))
+
+# Ajouter le coefficient de corrélation et R² au graphique (au milieu)
+text(
+  x = 600,  # Changer la position du texte sur l'axe x
+  y = 0.45 * max(donnees$`ECsp80`),  # Ajuster la position du texte
+  labels = paste("Correlation =", round(correlation, 2), "\nR² =", round(rsquared, 2)),
+  pos = 4,
+  col = "red"
+)
+
+# Ajouter l'équation de régression sous le coefficient de détermination
+text(
+  x = 698,  # Changer la position du texte sur l'axe x
+  y = 0.32 * max(donnees$`ECsp80`),  # Ajuster la position de l'équation
+  labels = bquote(italic(y) == .(eq)),
+  col = "red"
+)
+```
+
+## EM38 (0-150) and ECsp (0-120)
+```{r, echo=TRUE,eval=TRUE}
+# Charger la bibliothèque readxl
+library(readxl)
+
+# Charger les données depuis le fichier Excel
+chemin_fichier_excel <- "C:/Users/33652/Documents/supAgro/COURS 2A/Stat/Relation_EM38_conductivity.xlsx"
+donnees <- read_excel(chemin_fichier_excel)
+
+# Ouvrir une nouvelle fenêtre graphique
+options(repr.plot.width = 8, repr.plot.height = 8)  # Ajuster la taille du graphique
+par(mfrow = c(1, 1))  # Une seule fenêtre graphique
+
+# Tracer le graphique à dispersion avec les axes inversés
+plot(
+  x = donnees$`EM38_150`,
+  y = donnees$`ECsp120`,
+  main = "Scatter chart",
+  xlab = "EM38 (0-150) in mS/cm",  # Changer le label de l'axe x
+  ylab = "ECsp (0-120) in mS/cm",  # Changer le label de l'axe y
+  pch = 16,
+  col = "blue",
+  xlim = c(0, max(donnees$`EM38_150`)),
+  ylim = c(0, max(donnees$`ECsp120`)),
+  cex.lab = 1.6
+)
+
+# Ajouter une ligne de régression linéaire
+regression <- lm(`ECsp120` ~ `EM38_150`, data = donnees)
+abline(regression, col = "red", lwd = 2)
+
+# Légende pour la ligne de régression
+legend("topleft", legend = "Linear regression", col = "red", lwd = 2, bty = "n")
+
+# Calculer et afficher le coefficient de corrélation
+correlation <- cor(donnees$`EM38_150`, donnees$`ECsp120`)
+cat("Coefficient de corrélation : ", correlation, "\n")
+
+# Calculer et afficher le coefficient de détermination (R²)
+rsquared <- summary(regression)$r.squared
+cat("Coefficient de détermination (R²) : ", rsquared, "\n")
+
+# Obtenir les coefficients de la régression
+coefficients <- coef(regression)
+
+# Afficher le coefficient de corrélation et R² au graphique (au milieu)
+text(
+  x = 730,
+  y = 0.45 * max(donnees$`ECsp120`),
+  labels = paste("Correlation =", round(correlation, 2), "\nR² =", round(rsquared, 2)),
+  pos = 4,
+  col = "red",
+  cex = 1  # Ajuster la taille du texte
+)
+
+# Afficher l'équation de régression sous le coefficient de détermination
+eq <- as.character(round(coefficients[2], 4)) %>%
+  paste("* x + ", round(coefficients[1], 4))
+
+text(
+  x = 802,
+  y = 0.35 * max(donnees$`ECsp120`),
+  labels = bquote(italic(y) == .(eq)),
+  col = "red",
+  cex = 1  # Ajuster la taille du texte
+)
+```
+
+```{r,echo=TRUE,eval=TRUE}
+conductivity = read_excel("C:/Users/33652/Documents/supAgro/COURS 2A/Stat/Relation_EM38_conductivity.xlsx")
+View(conductivity)
+```
+
+
+
+## STEPWISE For the EM38 values between 0 and 35 cm : 
+```{r,echo=TRUE,eval=TRUE}
+#fit the full model
+full.model <- lm (EM38_35 ~ ECsp40 + Moisture40, data = conductivity)
+# Stepwise regression model
+step.model <- stepAIC(full.model, direction = "both", 
+                      trace = TRUE)
+summary(step.model)
+```
+
+## STEPWISE For the EM38 values between 0 and 75 cm (horizontal mode):
+```{r,echo=TRUE,eval=TRUE}
+#fit the full model
+full.model <- lm (EM38_75 ~ ECsp80 + Moisture80, data = conductivity)
+# Stepwise regression model
+step.model <- stepAIC(full.model, direction = "both", 
+                      trace = TRUE)
+summary(step.model)
+```
+
+## STEPWISE For the EM38 values between 0 and 75 cm (vertical mode):
+```{r,echo=TRUE,eval=TRUE}
+full.model <- lm (EM38_75bis ~ ECsp80 + Moisture80, data = conductivity)
+# Stepwise regression model
+step.model <- stepAIC(full.model, direction = "both", 
+                      trace = TRUE)
+summary(step.model)
+```
+
+
+## STEPWISE For the EM38 values between 0 and 150 cm : 
+```{r,echo=TRUE,eval=TRUE}
+full.model <- lm (EM38_150 ~ ECsp120 + Moisture120, data = conductivity)
+# Stepwise regression model
+step.model <- stepAIC(full.model, direction = "both", 
+                      trace = TRUE)
+summary(step.model)
+```
