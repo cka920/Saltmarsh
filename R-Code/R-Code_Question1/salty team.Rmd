@@ -1,0 +1,271 @@
+---
+title: "salty team"
+author: "lavergne"
+date: "2023-11-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo= TRUE, warning=FALSE, message=FALSE)
+rm(list=ls())
+```
+
+## R Markdown
+
+Just below is the code for the statistical analysis of our data, answering to the question : "Are there any significant differences within the observed plant communities and within the soil properties at short distance and in depth? "
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library (readxl)
+library(ggplot2)
+library(ggfortify)
+library(car)
+
+```
+
+```{r}
+#analysis of the data for the abiotic properties of the soil : 
+
+metadata<-read_excel("donnees_sol1.xlsx",sheet="metadata")
+donnees_global<-read_excel("donnees_sol1.xlsx",sheet="global")
+donneeee<-read_excel("donnees_sol1.xlsx",sheet="Feuil1")
+
+tableau <- metadata %>%  #contains all the data for all the patches, all the point and all the depth
+  full_join(donnees_global) %>% 
+  na.omit()
+
+tableau3<-metadata %>% #contains the data for all the patches, all the points, but at one predefined depth. This depth could be change by modifing the structure of the data sheet
+  full_join(donneeee) %>% 
+  na.omit()
+
+
+
+#with the code just below, we can see a graph showing the ECsp according to the localisation and the depth. To see the same thing with the moisture, change and write "y= moisture"
+
+ggplot(tableau, aes(x=Id_Localisation, y=ECsp, fill=Id_Depth)) +
+  geom_boxplot() +
+  labs(title = "ECsp of the soil depending on the depth and the different patches",
+       y = "average values of the ECsp") +
+  scale_fill_discrete(labels = c('0-20','20-40','40-60','60-80','80-100','100-120'))+
+  theme_minimal()
+
+
+ggplot(tableau, aes(x=Id_Localisation, y=ECsp, fill=Id_Point)) +
+  geom_boxplot() +
+  labs(title = "ECsp of the soil depending on the depth and the different patches",
+       y = "average values of the ECsp") +
+  scale_fill_discrete(labels = c('0-20','20-40','40-60','60-80','80-100','100-120'))+
+  theme_minimal()
+
+ggplot(tableau, aes(x=Id_Localisation, y=ECsp, fill=Id_Localisation))+
+  geom_boxplot() +
+  labs(title = "ECsp of the soil depending on the depth and the different patches",
+       y = "average values of the ECsp") +
+  theme_minimal()
+
+reg<-lm(moisture~Id_Localisation,data=tableau)
+summary(reg)
+ret_aov<-aov(reg)
+autoplot(reg)
+res<-residuals(reg)
+shapiro.test(res)
+leveneTest(ret_aov)
+anova(reg)
+TukeyHSD(ret_aov)
+
+metidataA<-read_excel("donnees_sol1.xlsx",sheet="patchA")
+metidataB<-read_excel("donnees_sol1.xlsx",sheet="patchB")
+metidataC<-read_excel("donnees_sol1.xlsx",sheet="patchC")
+metidataD<-read_excel("donnees_sol1.xlsx",sheet="patchD")
+metidataE<-read_excel("donnees_sol1.xlsx",sheet="patchE")
+metidataF<-read_excel("donnees_sol1.xlsx",sheet="patchF")
+
+tableau2 <- metadata %>%  #represents the data for one patch
+  full_join(metidataA) %>% #if you want to change the patch, you only have to change the letter #in metidata
+  na.omit()
+
+#boxplot showing the evolution of ECsp according to the depth. It shows the differences in a same patch. To see the same thing with the moisture, change and write "y= moisture" 
+
+ggplot(tableau2, aes(x=Id_Localisation, y=ECsp, fill=Id_Point))+
+  geom_boxplot() +
+  labs(title = "ECsp of the soil depending on the different point for patch a",
+       y = "average values of the ECsp") +
+  theme_minimal()
+
+# curves showing the evolution of ECsp for the 3 points of one patch. To see the same thing with the moisture, change and write "y= moisture"
+ggplot(tableau2, aes(x = Id_Depth, y = ECsp, color = Id_Point)) +
+  geom_line(aes(group = Id_Point), position = position_dodge(width = 0.8), size = 1) +
+  geom_point(position = position_dodge(width = 0.8), size = 3) +
+  labs(title = "ECsp of the patch a depending on the depth and the point",
+       y = "average values of the ECsp (mS/cm)") +
+  theme_minimal()
+
+
+#analysis of the variability in a patch
+
+reg<-lm(ECsp~Id_Point,data=tableau2)
+summary(reg)
+ret_aov<-aov(reg)
+autoplot(reg)
+res<-residuals(reg)
+shapiro.test(res)
+bartlett.test(ECsp~Id_Localisation,data=tableau)
+leveneTest(ret_aov)
+anova(reg)
+TukeyHSD(ret_aov)
+
+
+
+```
+
+```{r, echo=TRUE}
+
+conduc<-read_excel("EM38 (1).xlsx",sheet="EM38 (2)")
+conduct1<-read_excel("EM38 (1).xlsx",sheet="EM38")
+
+#Boxplot representing the average value of the ECa measured with EM38 from 0 to 35cm in depth according to the patch. To see the same thing with other depth, change and write "y= cond_75" for example
+
+ggplot(conduc, aes(x=Id_Localisation, y=cond_75, fill=Id_Localisation)) +
+  geom_boxplot()+
+  theme_minimal()
+
+#Boxplot representing the average value for the measurement thanks to EM38 at different depth :0-35, 0-75 (which was measured thanks to 2 different methods) and 0-150
+
+ggplot(conduct1, aes(x=Id_Localisation, y=measure, fill=conductivity)) +
+  labs(title = "EM38 results depending on the depth and the patches")+
+  geom_boxplot()+
+  theme_minimal()
+
+#statistical analysis
+
+reg<-lm(cond_75~Id_Localisation,data=conduc)
+summary(reg)
+ret_aov<-aov(reg)
+autoplot(reg)
+res<-residuals(reg)
+shapiro.test(res)
+leveneTest(ret_aov)
+anova(reg)
+TukeyHSD(ret_aov)
+
+```
+```{r,echo=TRUE}
+
+#boxplot showing the average of the vegetation cover according to the patch
+
+dodo<-read_excel("dataVegetation.xlsx", sheet="data_acp")
+
+ggplot(dodo, aes(x=id_localisation, y=vegetCover, fill=id_localisation))+
+  geom_boxplot() +
+  labs(y = "Vegetation cover of the different patches") +
+  theme_minimal()
+
+reg<-lm(vegetCover~id,data=dodo)
+summary(reg)
+ret_aov<-aov(reg)
+autoplot(reg)
+res<-residuals(reg)
+shapiro.test(res)
+leveneTest(ret_aov)
+anova(reg)
+TukeyHSD(ret_aov)
+```
+
+```{r, echo=TRUE}
+
+#mean height of the main plants according to the patch. To change the genus of the plant, you only have to write "heightsalicornia" or "heightcarex" in stead of heighthalimione"
+
+dodo2<-read_excel("dataVegetation.xlsx", sheet="heightcarex")
+
+ggplot(dodo2, aes(x=id, y=mean_height, color="id"))+
+  geom_boxplot() +
+  labs(title = "mean height of arroche on the different patches") +
+  theme_minimal()
+
+reg<-lm(mean_height~id,data=dodo2)
+summary(reg)
+ret_aov<-aov(reg)
+autoplot(reg)
+res<-residuals(reg)
+shapiro.test(res)
+anova(reg)
+leveneTest(ret_aov)
+TukeyHSD(ret_aov)
+
+```
+
+
+```{r, echo=TRUE,eval=TRUE}
+
+#Vegetation cover of the 6 differents patches
+
+donnees <- read_excel("dataVegetation.xlsx", sheet="genus_patch")
+
+donnees_long <- gather(donnees, key = "Patch", value = "Pourcentage", -1)
+donnees_long$Patch <- factor(donnees_long$Patch, levels = unique(donnees_long$Patch))
+
+donnees_long$Species <- factor(donnees_long$Species, levels = rev(c("Halimione", "Carex", "Phragmites", "Salicornia","Other (non-dominant plants)")))
+
+a = donnees_long$Pourcentage
+
+for (i in 2:5){
+  a[i] = a[i] + a[i-1]
+  a[i+5] = a[i+5] + a[i+4]
+  a[i+10] = a[i+10] + a[i+9]
+  a[i+15] = a[i+15] + a[i+14]
+  a[i+20] = a[i+20] + a[i+19]
+  a[i+25] = a[i+25] + a[i+24]
+}
+
+a[26] = a[27]
+a[17] = a[18] - a[17] + a[16]
+a[18] = a[17] + donnees_long$Pourcentage[19]
+
+graphique_patch <- ggplot(donnees_long, aes(x = Patch, y = Pourcentage, fill = Species)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.4) +  
+  labs(title = "Vegetation cover of the different dominant species in the 6 patches ",
+       x = "Patches",
+       y = "Vegetation Cover (%)") +
+  scale_fill_manual(values = c(
+    "Other (non-dominant plants)" = "lightgray",
+    "Halimione" = "#F7DC6F",
+    "Salicornia" = "red",
+    "Phragmites" = "cornflowerblue",
+    "Carex" = "darkgreen"
+  ), name = "Species") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.text = element_text(size = 17),
+        axis.title.x = element_text(size = 19),
+        axis.title.y = element_text(size = 19))
+print(graphique_patch)
+
+#vegetation cover of all quadrats of the 6 patches
+
+donnees <- read_excel("dataVegetation.xlsx", sheet="genus_quadrat")
+donnees_long <- gather(donnees, key = "Quadrat", value = "Pourcentage", -1)
+donnees_long$Quadrat <- factor(donnees_long$Quadrat, levels = unique(donnees_long$Quadrat))
+donnees_long$Species <- factor(donnees_long$Species, levels = rev(c("Halimione", "Carex", "Phragmites", "Salicornia","Other (non-dominant plants)")))
+graphique_quadrat <- ggplot(donnees_long, aes(x = Quadrat, y = Pourcentage, fill = Species)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +  
+  labs(title = "Vegetation cover of the different dominant species in the 6 patches ",
+       x = "Quadrat",
+       y = "Vegetation Cover (%)") +
+  scale_fill_manual(values = c(
+    "Other (non-dominant plants)" = "lightgray",
+    "Halimione" = "#F7DC6F",
+    "Salicornia" = "red",
+    "Phragmites" = "cornflowerblue",
+    "Carex" = "darkgreen"
+  )) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.text = element_text(size = 12),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14)) 
+print(graphique_quadrat)
+```
+
+```
+
