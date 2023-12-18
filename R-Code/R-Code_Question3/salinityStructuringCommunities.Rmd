@@ -1,0 +1,291 @@
+---
+title: "SalinityStructuringCommunities"
+author: "Charlotte Kaiser, Lucie Lavergne, Ewen Le Seyec, Cléo Salvia"
+date: "2023-12-10"
+output: html_document
+---
+
+Here are the statistic codes useful to answer to the following question : Is there a correlation between soil properties and the distribution of plant community patches?
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggpubr)
+library(car)
+library(readxl)
+```
+
+Chi-square tests of homogeneity are  used to determine whether variations in soil salinity influenced the presence or absence of species in the area studied. We focused on the 5 predominant genus of the salt marshes of Narbonne that are visible in autumn: Halimione, Salicornia, carex, limonium and phragmites.
+
+Downloading the dataset :
+``````{r,echo=TRUE,eval=TRUE}
+mydata <- read_excel("salinityStructuringCommunities.xlsx", sheet="salinity")
+view(mydata)
+summary(mydata)
+median(mydata$salinity)
+```
+
+The ECsp values used here are averages of the values found at different depths per observation point. We look at the median of these values to get an idea of the size of the two categories of values used for the chi-square test.
+
+Two salinity classes are used for the chi-square tests: conductivity below 43 Sm/cm and conductivity above 43 Sm/cm. 
+For each test, a contingency table was created beforehand, then the data was entered into vectors on R. The species presence/absence data used for these tests is summarised in the article, in appendix 2. 
+
+First, a test is performed to determine whether the presence of species depends on the salinity class. Each class is represented by a vector (salinity1 and salinity2) composed of the number of times each of the four species was present at that salinity level.  
+```{r,echo=TRUE,eval=TRUE}
+salinity1 = c(4,9,6,7)
+salinity2=c(8,2,0,1)
+tableau = matrix(c(salinity1,salinity2),2,4,byrow=T)
+khi_test = chisq.test(tableau)
+khi_test
+```
+
+The same test is performed taking into account the number of times the species were absent. 
+```{r,echo=TRUE,eval=TRUE}
+salinity1 = c(5,0,3,2)
+salinity2=c(1,7,9,8)
+tableau = matrix(c(salinity1,salinity2),2,4,byrow=T)
+khi_test = chisq.test(tableau)
+khi_test
+```
+
+Individual tests are now carried out for each species. Each salinity category is represented by a vector containing the number of times the species was present and the number of times it was absent.
+
+Test for salicornia :
+```{r,echo=TRUE,eval=TRUE}
+salinity1 = c(4,5)
+salinity2 = c(8,1)
+tableau = matrix(c(salinity1,salinity2),2,2,byrow=T)
+khi_test = chisq.test(tableau)
+khi_test
+
+#Test of predominance for salicornia (taking into account only the times when salicornia was dominant)
+salinity1 = c(2,7)
+salinity2 = c(7,2)
+tableau = matrix(c(salinity1,salinity2),2,2,byrow=T)
+khi_test = chisq.test(tableau)
+khi_test
+```
+
+Test for Carex:
+```{r,echo=TRUE,eval=TRUE}
+salinity1 = c(9,0)
+salinity2=c(2,7)
+tableau = matrix(c(salinity1,salinity2),2,2,byrow=T)
+khi_test = chisq.test(tableau)
+khi_test
+```
+Test for Phragmites :
+```{r,echo=TRUE,eval=TRUE}
+salinity1 = c(6,3)
+salinity2=c(0,9)
+tableau = matrix(c(salinity1,salinity2),2,2,byrow=T)
+khi_test = chisq.test(tableau)
+khi_test
+```
+Test for limonium narbonense : 
+```{r,echo=TRUE,eval=TRUE}
+salinity1 = c(7,2)
+salinity2=c(1,8)
+tableau = matrix(c(salinity1,salinity2),2,2,byrow=T)
+khi_test = chisq.test(tableau)
+khi_test
+```
+
+Here are some graphical representations to better visualise the distribution of species depending on the salinity level. 
+
+Representation of the distribution of the 5 species, depending on salinity with a Violin plot:
+``````{r,echo=TRUE,eval=TRUE}
+mydata2 <-read_excel("salinityStructuringCommunities.xlsx", sheet="violinPlot")
+ggplot(mydata2) +
+  aes(x = species, y = salinity) +
+  geom_violin(fill = "#d1f2eb", color = "#85929e") +
+  xlab("Species") +
+  ylab("Conductivity (mS/cm)") +
+  ggtitle("Distribution of the species depending on the level of salinity") +
+  geom_dotplot(binaxis='y', dotsize=0.5, stackdir='center')
+``````
+
+Representation of the distribution of the 3 predominant species, depending on the salinity, using a Violin plot (only the "dominantSpecies" are taken into account) :
+``````{r,echo=TRUE,eval=TRUE}
+ggplot(mydata) +
+  aes(x = dominantSpecies, y = salinity) +
+  geom_violin(fill = "#d1f2eb", color = "#85929e") +
+  xlab("Dominant species") +
+  ylab("Conductivity (mS/cm)") +
+  ggtitle("Distribution of the dominant species depending on the level of salinity") +
+  geom_dotplot(binaxis='y', dotsize=0.5, stackdir='center')
+``````
+
+Representation of the relationship between percent of total vegetation cover and salinity: 
+
+``````{r,echo=TRUE,eval=TRUE}
+ggplot(mydata, aes(x = salinity, y =X.vegetCover)) + 
+  geom_line()
+``````
+
+Corelation represented with the geom_smooth function of ggplot2 :
+``````{r,echo=TRUE,eval=TRUE}
+ggplot(mydata)+
+  aes(x =salinity, y =X.vegetCover) +
+  geom_smooth() +
+  geom_point() +
+  xlab("Conductivity (mS/cm)") +
+  ylab("Vegetation cover (%)") +
+  ggtitle("Vegetation cover depending on the level of salinity")
+````
+
+Correlation between the number of species present per quadrat (1m2) and salinity: ``
+
+``````{r,echo=TRUE,eval=TRUE}
+ggplot(mydata , aes(x = salinity, y = nbSpecies)) + 
+  geom_line() 
+``````
+
+A correlation between species richness and salinity is being sought. First of all, the geom_smooth function is used to better visualise the data. 
+``````{r,echo=TRUE,eval=TRUE}
+ggplot((mydata), aes(x =salinity, y =nbSpecies)) +
+  geom_point() +
+  geom_smooth() +
+  xlab("conductivity (mS/cm)") +
+  ylab("Number of species per quadrat (1m2)") +
+  ggtitle("Species richness depending on the level of salinity")
+``````
+
+Several regressions are performed and compared in order to best model the relationship between species richness and salinity.
+
+A linear regression :
+``````{r,echo=TRUE,eval=TRUE}
+regression1<- lm(nbSpecies~ salinity, data= mydata)
+summary(regression1)
+````
+A polynomial regression: 
+``````{r,echo=TRUE,eval=TRUE}
+ggplot((mydata), aes(x =salinity, y =nbSpecies)) +
+  geom_point(aes(color = factor(patch))) +
+  geom_smooth(method="lm", formula= y~x + I(x**2)) +
+  geom_hline(yintercept = 2, linetype = "dashed", color = "red") +
+  xlab("conductivity (mS/cm)") +
+  ylab("Number of species per quadrat (1m2)") +
+  ggtitle("Species richness depending on the level of salinity")
+
+Regression<- lm(mydata$nbSpecies~mydata$salinity + I(mydata$salinity**2))
+summary(Regression)
+``````
+An exponential regression: 
+``````{r,echo=TRUE,eval=TRUE}
+ggplot(mydata, aes(x = salinity, y = nbSpecies, color = patch)) +
+  geom_point() +
+  labs(x = "conductivity (mS/cm)", y = "Number of species per quadrat (1m2)",
+       ) +
+  geom_smooth(method = "nls", formula = y ~ A * exp(-b * x) + B,
+              se = FALSE, method.args = list(start = c(A = 5, b = 0.05, B = 1)),
+              color = "red", linetype = "solid", linewidth = 1) +
+  ggtitle("Specific richness depending on the level of salinity") +
+  scale_color_discrete(name = "Patch")  
+  
+#regression
+x_values=mydata$salinity
+y_values=mydata$nbSpecies
+initial_guess <- c(A = 5, b = 0.05, B = 1)
+fit<- nls(y_values ~ A * exp(-b * x_values) + B, start = initial_guess)
+summary(fit)
+
+# Calcul du R-squared
+SSE <- sum(residuals(fit)^2) # Somme des carrés des résidus
+SST <- sum((y_values - mean(y_values))^2) # Somme totale des carrés
+R_squared <- 1 - SSE / SST
+
+# Affichage du R-squared
+cat("R-squared:", R_squared, "\n")
+
+# Nombre d'observations
+n <- length(y_values)
+
+# Nombre de paramètres dans le modèle (3 pour A, b, B)
+k <- 3
+
+# Calcul de l'adjusted R-squared
+adjusted_R_squared <- 1 - ((1 - R_squared) * (n - 1)) / (n - k - 1)
+
+# Affichage de l'adjusted R-squared
+cat("Adjusted R-squared:", adjusted_R_squared, "\n")
+``````
+An anova is performed to see if the data about species richness is significantly different depending on the patches :
+
+``````{r,echo=TRUE,eval=TRUE}
+anavar <- lm (nbSpecies~patch, data=mydata)
+ret_aov<- aov(anavar)
+#analysis of the residuals
+res <- residuals(anavar)
+par(mfrow=c(2,2))
+plot(anavar,which=1)
+plot(anavar,which=2)
+plot(anavar,which=3)
+plot(anavar,which=4)
+#test of homogeneity of the variance 
+leveneTest(nbSpecies ~ patch, data = mydata)
+#Test of the normality
+shapiro.test(res)
+#Analysis of the variance  
+anova(anavar)
+#Tukey 
+TukeyHSD(ret_aov)
+``````
+The Shannon index data is shown below as a scatter plot. An Anova test is performed to determine whether the shannon indexes are significantly different between patches. 
+``````{r,echo=TRUE,eval=TRUE}
+ggplot((mydata), aes(x =salinity, y =shannonIndex)) +
+  geom_point(aes(color = factor(patch))) +
+  labs(x = "conductivity (mS/cm)", y = "Shannon index", color = "Patches", title = "Shannon index depending on the level of salinity")
+
+# test significant differences of shannon indexes between patches: 
+anavar <- lm (shannonIndex~patch, data=mydata)
+ret_aov<- aov(anavar)
+#analysis of the residuals
+res <- residuals(anavar)
+par(mfrow=c(2,2))
+plot(anavar,which=1)
+plot(anavar,which=2)
+plot(anavar,which=3)
+plot(anavar,which=4)
+#test of homogeneity of the variance 
+leveneTest(shannonIndex ~ patch, data = mydata)
+#Test of the normality
+shapiro.test(res)
+#analysis of the variance
+anova(anavar)
+#Tukey 
+TukeyHSD(ret_aov)
+``````
+
+The mean heights of the plants as a function of salinity are represented. 
+For Salicornia:
+``````{r,echo=TRUE,eval=TRUE}
+ggplot((mydata), aes(x =salinity, y =heightSalicornia)) +
+  geom_point(aes(color = factor(patch))) +
+  geom_smooth() +
+  xlab("conductivity (mS/cm)") +
+  ylab("Mean Height of Salicornia (cm)") +
+  ggtitle("Mean heigh of Salicornia as a function of salinity")
+``````
+For Halimione:
+``````{r,echo=TRUE,eval=TRUE}
+ggplot((mydata), aes(x =salinity, y =heightHalimione)) +
+  geom_point(aes(color = factor(patch))) +
+  geom_smooth() +
+  xlim(20,55) +
+  xlab("conductivity (mS/cm)") +
+  ylab("Mean Height of Halimione (cm)") +
+  ggtitle("Mean heigh of Halimione as a function of salinity")
+``````
+For Carex: 
+``````{r,echo=TRUE,eval=TRUE}
+ggplot((mydata), aes(x =salinity, y =heightCarex)) +
+  geom_point(aes(color = factor(patch))) +
+  geom_smooth() +
+  xlim(20,42) +
+  xlab("conductivity (mS/cm)") +
+  ylab("Mean Height of Carex (cm)") +
+  ggtitle("Mean heigh of Carex as a function of salinity")
+``````
